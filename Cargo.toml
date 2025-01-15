@@ -1,0 +1,26 @@
+[package]
+name = "artimonist"
+version = "0.3.5"
+authors = ["Artimonist <artimonist@gmail.com>"]
+description = "A tool for generating mnemonics based on diagrams."
+homepage = "https://artimonist.org/"
+repository = "https://github.com/artimonist/artimonist-lib/"
+
+keywords = ["bitcoin", "mnemonic"]
+categories = ["cryptography"]
+rust-version = "1.78.0"
+edition = "2021"
+crate-type = ["lib"]
+
+[features]
+default = []
+multilingual = []
+
+[dependencies]
+bitcoin = "0.32.5"
+rust-crypto = "0.2"
+thiserror = "2"
+unicode-normalization = "0.1.24"
+
+[dev-dependencies]
+bitcoin = { version = "0.32.5", features = ["base64"] }
