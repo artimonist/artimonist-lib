@@ -6,6 +6,7 @@ description = "A tool for generating mnemonics based on diagrams."
 homepage = "https://artimonist.org/"
 repository = "https://github.com/artimonist/artimonist-lib/"
 
+license-file = "LICENSE"
 keywords = ["bitcoin", "mnemonic"]
 categories = ["cryptography"]
 rust-version = "1.78.0"
