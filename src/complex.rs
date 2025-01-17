@@ -40,7 +40,7 @@ pub const CELL_CHARS_LIMIT: usize = 50;
 /// ```
 /// # use artimonist::{Diagram, ComplexDiagram};
 /// # use bitcoin::hex::FromHex;
-/// let secret = Vec::from_hex("414243313233e6b58be8af95e6b7b7413141262ae78e8bf09f988a030306050a8128000010000132").unwrap();
+/// let secret = Vec::from_hex("414243313233e6b58be8af95e6b7b7413141262ae78e8bf09f988a030306050a8128000010000132").unwrap_or_default();
 /// let mut diagram = ComplexDiagram::from_secret(secret)?;
 ///
 /// assert_eq!(diagram.get(6, 6), Some(&"A&*王😊".to_owned()));

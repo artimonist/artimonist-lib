@@ -1,4 +1,4 @@
-pub use super::{bit_operation::BitOperation, password::PasswordType, words::Language};
+pub use super::{bit_operation::BitOperation, password::Password, words::Language};
 use bitcoin::{
     bip32::{ChainCode, ChildNumber, Xpriv},
     hashes::{hmac, sha256, sha512, Hash, HashEngine},
@@ -63,7 +63,7 @@ pub trait Derivation {
     /// PWD BASE64  
     // Path format is: m/83696968'/707764'/{pwd_len}'/{index}'
     /// 20 <= pwd_len <= 86
-    fn bip85_pwd(&self, typ: PasswordType, pwd_len: usize, index: u32) -> DeriveResult<String>;
+    fn bip85_pwd(&self, pwd_type: Password, pwd_len: usize, index: u32) -> DeriveResult<String>;
 }
 
 /// BIP85 Derivation
@@ -95,7 +95,7 @@ impl Derivation for Xpriv {
         Ok(data
             .bit_chunks(11)
             .take(count)
-            .map(|i| lang.get_word(i as usize).unwrap())
+            .map(|i| lang.word_at(i as usize))
             .collect::<Vec<_>>()
             .join(" "))
     }
@@ -112,7 +112,7 @@ impl Derivation for Xpriv {
             // split to indices, map to words, join to string.
             data.bit_chunks(11)
                 .take(n)
-                .map(|i| lang.get_word(i as usize).unwrap())
+                .map(|i| lang.word_at(i as usize))
                 .collect::<Vec<_>>()
                 .join(" ")
         }))
@@ -128,7 +128,7 @@ impl Derivation for Xpriv {
     fn bip85_xpriv(&self, index: u32) -> DeriveResult<String> {
         let path = format!("m/83696968'/32'/{index}'");
         let entropy = bip85_derive(self, &path)?;
-        let chain_code = ChainCode::from_hex(&entropy[..32].to_lower_hex_string()).unwrap();
+        let chain_code = ChainCode::from_hex(&entropy[..32].to_lower_hex_string())?;
         let xpriv = Xpriv {
             network: NetworkKind::Main,
             depth: 0,
@@ -140,21 +140,17 @@ impl Derivation for Xpriv {
         Ok(xpriv.to_string())
     }
 
-    fn bip85_pwd(
-        &self,
-        pwd_type: PasswordType,
-        pwd_len: usize,
-        index: u32,
-    ) -> DeriveResult<String> {
+    fn bip85_pwd(&self, password: Password, pwd_len: usize, index: u32) -> DeriveResult<String> {
         if pwd_len < 20 || 86 < pwd_len {
             return Err(DeriveError::InvalidParameter("20 <= pwd_len <= 86"));
         }
         let path = format!("m/83696968'/707764'/{pwd_len}'/{index}'");
         let entropy = bip85_derive(self, &path)?;
+
         Ok(entropy
-            .bit_chunks(6)
+            .bit_chunks(password.bits())
             .take(pwd_len)
-            .map(|v| pwd_type.get_char(v as usize).unwrap())
+            .map(|v| password.char_at(v as usize))
             .collect::<String>())
     }
 }
@@ -171,6 +167,9 @@ pub enum DeriveError {
     /// Secp error
     #[error("runtime error")]
     RuntimeError(#[from] bitcoin::secp256k1::Error),
+    /// hex parse error
+    #[error("hex error")]
+    HexError(#[from] bitcoin::hex::HexToArrayError),
 }
 
 pub(crate) type DeriveResult<T = ()> = Result<T, DeriveError>;
@@ -230,7 +229,7 @@ mod bip85_test {
         const MASTER_KEY: &str = "xprv9s21ZrQH143K2LBWUUQRFXhucrQqBpKdRRxNVq2zBqsx8HVqFk2uYo8kmbaLLHRdqtQpUm98uKfu3vca1LqdGhUtyoFnCNkfmXRyPXLjbKb";
         const DERIVED_PWD: &str = "dKLoepugzdVJvdL56ogNV";
         let root = bitcoin::bip32::Xpriv::from_str(MASTER_KEY)?;
-        let pwd = root.bip85_pwd(PasswordType::Legacy, 21, 0)?;
+        let pwd = root.bip85_pwd(Password::Legacy, 21, 0)?;
         assert_eq!(pwd, DERIVED_PWD);
         Ok(())
     }

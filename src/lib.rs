@@ -7,19 +7,33 @@
 //!
 //! # Examples
 //! ```
-//! use artimonist::{Diagram, SimpleDiagram, BIP85, Language};
+//! use artimonist::{Diagram, SimpleDiagram, BIP85, Language, Password};
 //!
 //! let items = vec![Some('🍔'), Some('🍟'), Some('🌭'), Some('🍦'), Some('🍩')];
 //! let indices = vec![(1, 1), (5, 5), (1, 5), (5, 1), (3, 3)];
-//!
 //! let diagram = SimpleDiagram::from_items(items, &indices)?;
 //! let master = diagram.to_master("🚲🍀🌈".as_bytes())?;
-//! let mnemonic = master.bip85_mnemonic(Language::English, 15, 0).unwrap();
 //!
+//! let mnemonic = master.bip85_mnemonic(Language::English, 15, 0)?;
 //! assert_eq!(&mnemonic, "lake album jump occur hedgehog fantasy drama sauce oyster velvet gadget control behave hamster begin");
+//!
+//! assert_eq!(master.bip85_wif(0)?, "L512KXTvjM15Rx47XKCsLxeP6wWaLFXkcvcpzgLwdoxXpZ4LCiSM");
+//! assert_eq!(master.bip85_xpriv(0)?, "xprv9s21ZrQH143K2BaWTmmsZ8xcAPbpWWLweSGnyFVQJe5G7kqPFc64SrnhARRYy2d9qGuxHhimKk5BBaPdG2tG4Wcenxb5ikYTXwtZehggiru");
+//! assert_eq!(master.bip85_pwd(Password::Emoji, 20, 0)?, "🐬🐍🏠😍🌻⚡🐍✋🚗🌴🍟🎈🏠💧🌈🍌🔑🌙🐸🌴");
+//!
 //! # Ok::<(), artimonist::Error>(())
 //! ```
-
+//! The simple diagram looks like this:
+//!
+//! |  |  |  |  |  |  |  |
+//! |--|--|--|--|--|--|--|  
+//! |  |🍔|  |  |  |🌭|  |
+//! |  |  |  |  |  |  |  |
+//! |  |  |  |🍩|  |  |  |
+//! |  |  |  |  |  |  |  |
+//! |  |🍦|  |  |  |🍟|  |
+//! |  |  |  |  |  |  |  |
+//!
 pub(crate) mod bip38;
 pub(crate) mod bip39;
 pub(crate) mod bip49;
@@ -34,7 +48,7 @@ pub(crate) mod words;
 pub use bip38::Encryptor;
 pub use bip39::Derivation as BIP39;
 pub use bip49::Derivation as BIP49;
-pub use bip85::{Derivation as BIP85, Language, PasswordType as Password};
+pub use bip85::{Derivation as BIP85, Language, Password};
 #[doc(no_inline)]
 pub use bitcoin::{self, bip32::Xpriv};
 pub use complex::ComplexDiagram;

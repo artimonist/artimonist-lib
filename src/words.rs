@@ -8,7 +8,7 @@
 
 /// Mnemonic words language
 #[cfg(not(feature = "multilingual"))]
-#[derive(Default, Clone, Copy)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
 pub enum Language {
     /// English
     #[default]
@@ -19,7 +19,7 @@ pub enum Language {
 const WORD_LIST: [&[&str; 2048]; 1] = [&ENGLISH];
 
 #[cfg(feature = "multilingual")]
-#[derive(Default, Clone, Copy)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
 pub enum Language {
     #[default]
     English = 0,
@@ -35,12 +35,13 @@ pub enum Language {
 }
 
 impl Language {
-    /// get mnemonic word
+    /// get mnemonic word  
+    /// 0 <= index < 2048  
+    /// # Panics  
+    /// if index >= 2048  
     #[inline]
-    pub fn get_word(&self, index: usize) -> Option<&str> {
-        WORD_LIST[*self as usize]
-            .get(index)
-            .map_or(None, |&v| Some(v))
+    pub fn word_at(&self, index: usize) -> &str {
+        WORD_LIST[*self as usize][index]
     }
 }
 
